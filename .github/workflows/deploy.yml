@@ -17,15 +17,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Show Node.js version
-        run: node -v && npm -v
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Show Wrangler version
-        run: wrangler --version
-
       - name: Install dependencies
         run: npm ci
 
@@ -34,11 +25,10 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Show build output
-        run: ls -la .next
-
       - name: Deploy to Cloudflare Pages
-        run: wrangler pages deploy .next --project-name=ai-image-stylizer
+        run: |
+          cd .next
+          npx wrangler pages deploy . --project-name=ai-image-stylizer
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

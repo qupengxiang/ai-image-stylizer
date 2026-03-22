@@ -4,6 +4,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Cloudflare specific config
+  experimental: {
+    // Enable Cloudflare Workers support
+  },
 };
 
 module.exports = nextConfig;

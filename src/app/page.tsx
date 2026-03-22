@@ -166,7 +166,7 @@ export default function Home() {
 
   const handleReset = () => {
     setSelectedFile(null);
-    setSelectedStyle('cartoon');
+    setSelectedStyle('cute-cartoon');
     setGeneratedImage(null);
     setError(null);
     if (fileInputRef.current) {

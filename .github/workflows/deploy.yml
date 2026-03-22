@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,18 +17,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
+      - name: Install Wrangler
+        run: npm install -g wrangler
 
       - name: Install dependencies
-        run: |
-          npm cache clean --force
-          npm install --force --legacy-peer-deps
+        run: npm ci
 
       - name: Build
         run: npm run build
@@ -36,10 +29,7 @@ jobs:
           NODE_ENV: production
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ai-image-stylizer
-          directory: .next
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        run: wrangler pages deploy .next --project-name=ai-image-stylizer
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

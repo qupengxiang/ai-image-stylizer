@@ -31,6 +31,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ai-image-stylizer-v2
+          projectName: ai-image-stylizer
           directory: .next
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 const styles = [
   { 
@@ -88,6 +89,7 @@ const cartoonColors = {
 };
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>('cute-cartoon');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -183,10 +185,41 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-bounce drop-shadow-lg">🎨 AI 图片风格生成器 🎨</h1>
+          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-bounce drop-shadow-lg">🎨 ImgArt 🎨</h1>
           <p className="text-white text-xl max-w-3xl mx-auto font-medium drop-shadow-md">
             上传图片，选择风格，一键生成超酷的艺术作品！图片不存储，仅用于生成过程。
           </p>
+          
+          {/* 用户登录状态 */}
+          <div className="mt-4">
+            {status === "loading" ? (
+              <span className="text-white/70 text-sm">加载中...</span>
+            ) : session ? (
+              <div className="flex items-center gap-3 justify-center">
+                {session.user?.image && (
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || ""} 
+                    className="w-10 h-10 rounded-full border-2 border-white"
+                  />
+                )}
+                <span className="text-white font-medium">{session.user?.name}</span>
+                <button
+                  onClick={() => signOut()}
+                  className="bg-white/20 hover:bg-white/30 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors"
+                >
+                  退出
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => signIn("google")}
+                className="bg-white hover:bg-white/90 text-purple-600 px-6 py-2 rounded-full font-bold shadow-lg transition-colors"
+              >
+                使用 Google 登录
+              </button>
+            )}
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
@@ -340,7 +373,7 @@ export default function Home() {
         </div>
 
         <footer className="mt-10 text-center text-white">
-          <p className="mb-2 font-bold text-lg drop-shadow-md">© 2024 AI 图片风格生成器</p>
+          <p className="mb-2 font-bold text-lg drop-shadow-md">© 2024 ImgArt</p>
           <p className="text-sm text-white/80 drop-shadow-sm">🎨 图片不存储，仅用于生成过程 🎨</p>
         </footer>
       </div>

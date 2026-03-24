@@ -1,8 +1,9 @@
-'use client';
+'use client'
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const styles = [
   { 
@@ -90,12 +91,15 @@ const cartoonColors = {
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // 强制刷新以同步 session
+    router.refresh();
+  }, [router]);
   const [selectedStyle, setSelectedStyle] = useState<string>('cute-cartoon');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -214,7 +218,10 @@ export default function Home() {
               </div>
             ) : (
               <button
-                onClick={() => signIn("google")}
+                onClick={() => {
+                  console.log("Login button clicked");
+                  signIn("google", { callbackUrl: "https://www.imgart.shop" }).catch(err => console.error("Sign in error:", err));
+                }}
                 className="bg-white hover:bg-white/90 text-purple-600 px-4 py-2 rounded-full font-bold shadow-lg transition-colors text-sm"
               >
                 使用 Google 登录

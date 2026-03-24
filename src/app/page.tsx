@@ -95,11 +95,22 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // 登录后强制刷新 session
   useEffect(() => {
     setMounted(true);
-    // 强制刷新以同步 session
-    router.refresh();
-  }, [router]);
+    // 登录回调后会带有特定参数，检测到则刷新
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('callback') || params.has('authenticated')) {
+      window.location.reload();
+    }
+  }, []);
+
+  // 当 session 状态变化时强制刷新
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.refresh();
+    }
+  }, [status, router]);
   const [selectedStyle, setSelectedStyle] = useState<string>('cute-cartoon');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -218,10 +229,7 @@ export default function Home() {
               </div>
             ) : (
               <button
-                onClick={() => {
-                  console.log("Login button clicked");
-                  signIn("google", { callbackUrl: "https://www.imgart.shop" }).catch(err => console.error("Sign in error:", err));
-                }}
+                onClick={() => signIn("google")}
                 className="bg-white hover:bg-white/90 text-purple-600 px-4 py-2 rounded-full font-bold shadow-lg transition-colors text-sm"
               >
                 使用 Google 登录

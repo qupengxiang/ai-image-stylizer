@@ -214,11 +214,7 @@ export default function Home() {
               </div>
             ) : (
               <button
-                onClick={() => {
-                  signIn("google", { callbackUrl: "/" }).then(() => {
-                    setTimeout(() => window.location.href = "/", 100);
-                  });
-                }}
+                onClick={() => signIn("google")}
                 className="bg-white hover:bg-white/90 text-purple-600 px-4 py-2 rounded-full font-bold shadow-lg transition-colors text-sm"
               >
                 使用 Google 登录

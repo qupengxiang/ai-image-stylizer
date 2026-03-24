@@ -29,3 +29,4 @@ out/
 ehthumbs.db
 Thumbs.db
 /generated/prisma
+.vercel

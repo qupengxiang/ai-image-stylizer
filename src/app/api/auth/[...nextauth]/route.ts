@@ -12,6 +12,7 @@ const handler = NextAuth({
   pages: {
     signIn: "/login",
   },
+  trustHost: true,
   callbacks: {
     async signIn({ user, account, profile }) {
       if (user.email) {

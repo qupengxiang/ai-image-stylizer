@@ -9,24 +9,18 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  pages: {
-    signIn: "/login",
-  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (user.email) {
-        await prisma.user.upsert({
-          where: { email: user.email },
-          update: {
-            name: user.name,
-            image: user.image,
-          },
-          create: {
-            email: user.email,
-            name: user.name,
-            image: user.image,
-          },
-        })
+        try {
+          await prisma.user.upsert({
+            where: { email: user.email },
+            update: { name: user.name, image: user.image },
+            create: { email: user.email, name: user.name, image: user.image },
+          })
+        } catch (e) {
+          console.error("Database error:", e)
+        }
       }
       return true
     },

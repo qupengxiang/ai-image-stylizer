@@ -104,9 +104,17 @@ export default function UserCenter() {
         {/* 头部 */}
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">👤 用户中心</h1>
+            <div className="flex items-center gap-4">
+              <a
+                href="/"
+                className="bg-purple-100 hover:bg-purple-200 text-purple-600 px-4 py-2 rounded-full text-sm font-medium transition-colors"
+              >
+                ← 返回首页
+              </a>
+              <h1 className="text-2xl font-bold text-gray-800">👤 用户中心</h1>
+            </div>
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm font-medium transition-colors"
             >
               退出登录

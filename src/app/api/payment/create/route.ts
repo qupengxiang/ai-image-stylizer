@@ -75,18 +75,11 @@ export async function POST(request: Request) {
         purchase_units: [{
           amount: {
             currency_code: 'USD',
-            value: (pkg.price / 7.2).toFixed(2), // 转换为美元
+            value: (pkg.price / 7.2).toFixed(2),
           },
-          description: `ImgArt ${pkg.name} - ${pkg.credits}积分`,
-          custom_id: order.id, // 关联本地订单
+          description: `ImgArt ${pkg.name}`,
+          custom_id: order.id,
         }],
-        application_context: {
-          brand_name: 'ImgArt',
-          landing_page: 'BILLING',
-          user_action: 'PAY_NOW',
-          return_url: `${process.env.NEXTAUTH_URL}/user-center/membership?success=true&orderId=${order.id}`,
-          cancel_url: `${process.env.NEXTAUTH_URL}/user-center/membership?canceled=true`,
-        },
       }),
     })
 

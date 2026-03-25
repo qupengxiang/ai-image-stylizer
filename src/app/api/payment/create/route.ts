@@ -74,8 +74,8 @@ export async function POST(request: Request) {
         intent: 'CAPTURE',
         purchase_units: [{
           amount: {
-            currency_code: 'CNY',
-            value: pkg.price.toFixed(2),
+            currency_code: 'USD',
+            value: (pkg.price / 7.2).toFixed(2), // 转换为美元
           },
           description: `ImgArt ${pkg.name} - ${pkg.credits}积分`,
           custom_id: order.id, // 关联本地订单

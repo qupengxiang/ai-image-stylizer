@@ -41,8 +41,6 @@ export default function UserCenter() {
       const res = await fetch('/api/user/me')
       const data = await res.json()
       setUser(data)
-      // 检查今日是否已领取
-      checkDailyClaim()
     } catch (error) {
       console.error('获取用户信息失败:', error)
     } finally {
@@ -50,32 +48,25 @@ export default function UserCenter() {
     }
   }
 
-  const checkDailyClaim = async () => {
-    try {
-      // 尝试领取，如果已领取会返回错误
-      const res = await fetch('/api/user/daily-login', { method: 'POST' })
-      if (res.ok) {
-        setClaimed(true)
-        fetchUserData() // 刷新用户数据
-      }
-    } catch {
-      // 忽略
-    }
-  }
-
   const handleClaimDaily = async () => {
     setClaiming(true)
     try {
       const res = await fetch('/api/user/daily-login', { method: 'POST' })
+      const data = await res.json()
+      
       if (res.ok) {
         setClaimed(true)
-        fetchUserData()
+        // 直接更新本地积分，不等待 fetchUserData
+        if (user) {
+          setUser({ ...user, credits: data.balance })
+        }
         alert('领取成功！+5积分')
       } else {
-        const data = await res.json()
         if (data.alreadyClaimed) {
           setClaimed(true)
           alert('今日已领取')
+        } else {
+          alert(data.error || '领取失败')
         }
       }
     } catch (error) {

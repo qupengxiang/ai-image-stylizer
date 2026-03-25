@@ -98,7 +98,7 @@ export async function POST(request: Request) {
         where: { id: order.id },
         data: { status: 'CANCELLED' },
       })
-      return NextResponse.json({ error: '支付创建失败' }, { status: 500 })
+      return NextResponse.json({ error: '支付创建失败: ' + (paypalOrder.message || paypalOrder.name || JSON.stringify(paypalOrder)) }, { status: 500 })
     }
 
     // 找到 approval URL

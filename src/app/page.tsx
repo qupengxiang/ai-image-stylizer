@@ -207,7 +207,15 @@ export default function Home() {
           </div>
 
           {/* 右上角用户状态 */}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {session && (
+              <a
+                href="/user-center"
+                className="bg-white/20 hover:bg-white/30 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors"
+              >
+                👤 用户中心
+              </a>
+            )}
             {status === "loading" ? (
               <span className="text-white/70 text-sm">加载中...</span>
             ) : session ? (

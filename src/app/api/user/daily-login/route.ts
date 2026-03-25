@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/db'
-import { isVIP, getGenerationCost } from '@/lib/utils'
 
-export async function POST(request: Request) {
+export async function POST() {
   const session = await getServerSession()
 
   if (!session?.user?.email) {
@@ -18,41 +17,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 })
   }
 
-  // 计算积分消耗
-  const isVIPUser = isVIP(user.vipExpireAt)
-  const cost = getGenerationCost(isVIPUser)
+  // 检查今日是否已领取
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
 
-  // 检查积分是否充足
-  if (user.credits < cost) {
-    return NextResponse.json({ error: '积分不足', code: 'INSUFFICIENT_CREDITS' }, { status: 400 })
+  const todayLogin = await prisma.creditLog.findFirst({
+    where: {
+      userId: user.id,
+      type: 'LOGIN_DAILY',
+      createdAt: { gte: todayStart }
+    }
+  })
+
+  if (todayLogin) {
+    return NextResponse.json({ error: '今日已领取', alreadyClaimed: true }, { status: 400 })
   }
 
-  // 扣减积分并记录
-  const newBalance = user.credits - cost
+  // 发放每日积分
+  const newBalance = user.credits + 5
 
-  const [updatedUser, generation] = await prisma.$transaction([
+  await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
       data: {
         credits: newBalance,
-        totalUsage: { increment: 1 },
+        totalCredits: { increment: 5 },
       }
     }),
     prisma.creditLog.create({
       data: {
         userId: user.id,
-        type: 'GENERATE',
-        amount: -cost,
+        type: 'LOGIN_DAILY',
+        amount: 5,
         balance: newBalance,
-        remark: `生成图片，消耗${cost}积分`,
+        remark: '每日登录赠送',
       }
     })
   ])
 
-  // 这里返回成功，实际生成逻辑在客户端处理
   return NextResponse.json({
     success: true,
-    cost,
-    remainingCredits: newBalance,
+    amount: 5,
+    balance: newBalance
   })
 }

@@ -8,14 +8,32 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  image     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  role          UserRole  @default(FREE)
+  credits       Int       @default(100)     // 当前积分
+  totalCredits  Int       @default(100)     // 历史获得积分
+  totalUsage    Int       @default(0)       // 历史使用次数
+  vipExpireAt   DateTime?                   // VIP到期时间
+  inviteCode    String    @unique           // 用户的邀请码
+  invitedBy     String?                     // 邀请人ID
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
 
-  generations Generation[]
+  generations   Generation[]
+  creditLogs    CreditLog[]
+  vipOrders     VIPOrder[]
+  invitedUsers  User[]    @relation("Inviter")
+  inviter       User?     @relation("Inviter", fields: [invitedBy], references: [id])
+}
+
+enum UserRole {
+  FREE
+  VIP
+  ADMIN
 }
 
 model Generation {
@@ -27,4 +45,54 @@ model Generation {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditLog {
+  id        String     @id @default(cuid())
+  userId    String
+  type      CreditType
+  amount    Int
+  balance   Int
+  remark    String?
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CreditType {
+  REGISTER          // 注册赠送
+  INVITE            // 邀请好友
+  LOGIN_DAILY       // 每日登录
+  PURCHASE          // 充值购买
+  GENERATE          // 生成图片
+  VIP_GIFT          // VIP赠送
+  ADMIN_ADJUST      // 管理员调整
+}
+
+model VIPOrder {
+  id          String      @id @default(cuid())
+  userId      String
+  package     VIPPackage  @default(MONTHLY)
+  amount      Int         // 实付金额(分)
+  status      OrderStatus @default(PENDING)
+  tradeNo     String?     // 支付流水号
+  expireAt    DateTime    // VIP到期时间
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum VIPPackage {
+  TRIAL    // 体验版 9.9
+  MONTHLY  // 月卡 29
+  QUARTER  // 季卡 79
+  YEARLY   // 年卡 299
+}
+
+enum OrderStatus {
+  PENDING   // 待支付
+  PAID      // 已支付
+  CANCELLED // 已取消
+  REFUNDED  // 已退款
 }

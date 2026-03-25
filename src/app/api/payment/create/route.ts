@@ -63,6 +63,11 @@ export async function POST(request: Request) {
     // 获取 PayPal Access Token
     const { accessToken, baseUrl } = await getPayPalAccessToken()
 
+    console.log('PayPal credentials loaded, mode:', process.env.PAYPAL_MODE, 'baseUrl:', baseUrl)
+
+    const usdPrice = Number((pkg.price / 7.2).toFixed(2))
+    console.log('Creating order with USD price:', usdPrice, 'package:', pkg.name)
+
     // 创建 PayPal 订单
     const paypalResponse = await fetch(`${baseUrl}/v2/checkout/orders`, {
       method: 'POST',
@@ -75,7 +80,7 @@ export async function POST(request: Request) {
         purchase_units: [{
           amount: {
             currency_code: 'USD',
-            value: (pkg.price / 7.2).toFixed(2),
+            value: usdPrice,
           },
           description: `ImgArt ${pkg.name}`,
           custom_id: order.id,
@@ -83,7 +88,10 @@ export async function POST(request: Request) {
       }),
     })
 
+    console.log('PayPal response status:', paypalResponse.status)
+
     const paypalOrder = await paypalResponse.json()
+    console.log('PayPal response:', JSON.stringify(paypalOrder))
 
     if (!paypalResponse.ok) {
       console.error('PayPal create order failed:', paypalOrder)

@@ -148,6 +148,23 @@ export default function Home() {
     setError(null);
 
     try {
+      // 先调用 API 扣积分
+      const deductRes = await fetch('/api/generation', { method: 'POST' })
+      const deductData = await deductRes.json()
+      
+      if (!deductRes.ok) {
+        if (deductData.code === 'INSUFFICIENT_CREDITS') {
+          setError('积分不足，请先获取积分或升级VIP')
+          setIsLoading(false)
+          return
+        }
+        setError(deductData.error || '积分扣除失败')
+        setIsLoading(false)
+        return
+      }
+      
+      console.log('积分已扣除:', deductData.cost, '剩余:', deductData.remainingCredits)
+      
       // 获取当前选中风格的提示词
       const stylePrompt = getCurrentStylePrompt();
       

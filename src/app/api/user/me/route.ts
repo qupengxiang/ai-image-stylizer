@@ -14,7 +14,7 @@ export async function GET() {
     where: { email: session.user.email },
     include: {
       _count: {
-        select: { generations: true, creditLogs: true }
+        select: { creditLogs: true }
       }
     }
   })
@@ -22,27 +22,6 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 })
   }
-
-  // 获取今日使用次数
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
-  const todayUsage = await prisma.generation.count({
-    where: {
-      userId: user.id,
-      createdAt: { gte: todayStart }
-    }
-  })
-
-  // 获取本月使用次数
-  const monthStart = new Date()
-  monthStart.setDate(1)
-  monthStart.setHours(0, 0, 0, 0)
-  const monthUsage = await prisma.generation.count({
-    where: {
-      userId: user.id,
-      createdAt: { gte: monthStart }
-    }
-  })
 
   return NextResponse.json({
     id: user.id,
@@ -59,9 +38,9 @@ export async function GET() {
     lastLoginAt: user.lastLoginAt,
     isVIP: isVIP(user.vipExpireAt),
     stats: {
-      todayUsage,
-      monthUsage,
-      totalGenerations: user._count.generations,
+      todayUsage: 0,
+      monthUsage: 0,
+      totalGenerations: user.totalUsage,
     }
   })
 }

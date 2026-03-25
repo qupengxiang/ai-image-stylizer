@@ -115,6 +115,8 @@ export default function Home() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showVipModal, setShowVipModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 获取当前选中风格的提示词
@@ -144,6 +146,12 @@ export default function Home() {
       return;
     }
 
+    // 检查登录状态
+    if (status !== 'authenticated') {
+      setShowLoginModal(true);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -154,13 +162,13 @@ export default function Home() {
       
       if (!deductRes.ok) {
         if (deductData.code === 'INSUFFICIENT_CREDITS') {
-          setError('积分不足，请先获取积分或升级VIP')
-          setIsLoading(false)
-          return
+          setShowVipModal(true);
+          setIsLoading(false);
+          return;
         }
-        setError(deductData.error || '积分扣除失败')
-        setIsLoading(false)
-        return
+        setError(deductData.error || '积分扣除失败');
+        setIsLoading(false);
+        return;
       }
       
       console.log('积分已扣除:', deductData.cost, '剩余:', deductData.remainingCredits)
@@ -194,12 +202,24 @@ export default function Home() {
     }
   };
 
-  const handleDownload = () => {
-    if (generatedImage) {
+  const handleDownload = async () => {
+    if (!generatedImage) return;
+    
+    try {
+      const response = await fetch(generatedImage);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = generatedImage;
-      link.download = `styled-image-${Date.now()}.png`;
+      link.href = url;
+      link.download = `imgart-${Date.now()}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('下载失败:', err);
+      // Fallback: open in new tab
+      window.open(generatedImage, '_blank');
     }
   };
 
@@ -422,6 +442,100 @@ export default function Home() {
           <p className="mb-2 font-bold text-lg drop-shadow-md">© 2024 ImgArt</p>
           <p className="text-sm text-white/80 drop-shadow-sm">🎨 图片不存储，仅用于生成过程 🎨</p>
         </footer>
+
+        {/* 登录提示弹窗 */}
+        {showLoginModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
+              <div className="text-6xl mb-4">🔐</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">请先登录</h2>
+              <p className="text-gray-600 mb-6">登录后才能使用 AI 图片生成功能</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLoginModal(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => signIn("google")}
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Google 登录
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIP 促销弹窗 */}
+        {showVipModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full">
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">👑</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">积分不足</h2>
+                <p className="text-gray-600">升级 VIP 会员，享受更多权益</p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span className="text-green-500">✓</span>
+                  <span>生成图片 8 折优惠</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span className="text-green-500">✓</span>
+                  <span>专属艺术风格</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span className="text-green-500">✓</span>
+                  <span>优先排队生成</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span className="text-green-500">✓</span>
+                  <span>每日登录送积分</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-purple-50 rounded-xl p-4 text-center border-2 border-purple-200">
+                  <p className="text-purple-600 font-bold">月卡</p>
+                  <p className="text-2xl font-bold text-purple-600">¥29</p>
+                  <p className="text-xs text-gray-500">500积分</p>
+                </div>
+                <div className="bg-gradient-to-br from-yellow-400 to-orange-400 rounded-xl p-4 text-center border-2 border-yellow-300 text-white">
+                  <p className="font-bold">季卡</p>
+                  <p className="text-2xl font-bold">¥79</p>
+                  <p className="text-xs opacity-90">1500积分</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowVipModal(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold transition-colors"
+                >
+                  稍后再说
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVipModal(false);
+                    window.location.href = '/user-center/membership';
+                  }}
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-bold transition-all"
+                >
+                  立即升级
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

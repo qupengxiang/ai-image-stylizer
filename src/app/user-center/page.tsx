@@ -213,16 +213,6 @@ export default function UserCenter() {
               </div>
             </Link>
             <Link
-              href="/user-center/invite"
-              className="bg-gradient-to-r from-pink-400 to-red-400 hover:from-pink-500 hover:to-red-500 text-white p-4 rounded-xl font-bold shadow-lg transition-all flex items-center gap-3"
-            >
-              <span className="text-2xl">👥</span>
-              <div className="text-left">
-                <p className="text-lg">邀请好友</p>
-                <p className="text-xs opacity-80">邀请得积分</p>
-              </div>
-            </Link>
-            <Link
               href="/user-center/membership"
               className="bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-500 hover:to-indigo-500 text-white p-4 rounded-xl font-bold shadow-lg transition-all flex items-center gap-3"
             >
@@ -230,16 +220,6 @@ export default function UserCenter() {
               <div className="text-left">
                 <p className="text-lg">升级会员</p>
                 <p className="text-xs opacity-80">享受更多权益</p>
-              </div>
-            </Link>
-            <Link
-              href="/user-center/usage"
-              className="bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-500 hover:to-cyan-500 text-white p-4 rounded-xl font-bold shadow-lg transition-all flex items-center gap-3"
-            >
-              <span className="text-2xl">📈</span>
-              <div className="text-left">
-                <p className="text-lg">使用记录</p>
-                <p className="text-xs opacity-80">查看历史生成</p>
               </div>
             </Link>
           </div>

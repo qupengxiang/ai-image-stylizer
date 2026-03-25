@@ -187,17 +187,17 @@ export default function UserCenter() {
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-blue-500 text-2xl mb-1">📅</p>
               <p className="text-gray-500 text-xs">今日使用</p>
-              <p className="text-2xl font-bold text-blue-600">{user?.stats.todayUsage}</p>
+              <p className="text-2xl font-bold text-blue-600">{user?.stats?.todayUsage ?? 0}</p>
             </div>
             <div className="bg-green-50 rounded-xl p-4 text-center">
               <p className="text-green-500 text-2xl mb-1">📆</p>
               <p className="text-gray-500 text-xs">本月使用</p>
-              <p className="text-2xl font-bold text-green-600">{user?.stats.monthUsage}</p>
+              <p className="text-2xl font-bold text-green-600">{user?.stats?.monthUsage ?? 0}</p>
             </div>
             <div className="bg-purple-50 rounded-xl p-4 text-center">
               <p className="text-purple-500 text-2xl mb-1">📊</p>
               <p className="text-gray-500 text-xs">总使用量</p>
-              <p className="text-2xl font-bold text-purple-600">{user?.stats.totalGenerations}</p>
+              <p className="text-2xl font-bold text-purple-600">{user?.stats?.totalGenerations ?? 0}</p>
             </div>
           </div>
 

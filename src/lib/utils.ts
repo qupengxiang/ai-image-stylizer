@@ -19,13 +19,14 @@ export function getGenerationCost(isVIPUser: boolean): number {
   return isVIPUser ? 1 : 2
 }
 
-// VIP套餐配置
+// VIP套餐配置（CNY价格 + USD价格）
 export const VIP_PACKAGES = {
   TRIAL: {
     name: '体验版',
     days: 7,
     credits: 100,
     price: 9.9,
+    priceUSD: 1.4,
     originalPrice: 9.9,
   },
   MONTHLY: {
@@ -33,6 +34,7 @@ export const VIP_PACKAGES = {
     days: 30,
     credits: 500,
     price: 29,
+    priceUSD: 4.0,
     originalPrice: 29,
   },
   QUARTER: {
@@ -40,6 +42,7 @@ export const VIP_PACKAGES = {
     days: 90,
     credits: 1500,
     price: 79,
+    priceUSD: 11.0,
     originalPrice: 99,
   },
   YEARLY: {
@@ -47,6 +50,7 @@ export const VIP_PACKAGES = {
     days: 365,
     credits: 8000,
     price: 299,
+    priceUSD: 41.5,
     originalPrice: 499,
   },
 } as const

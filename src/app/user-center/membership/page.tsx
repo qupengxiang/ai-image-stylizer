@@ -207,7 +207,8 @@ export default function MembershipPage() {
                     {pkg.originalPrice > pkg.price && (
                       <span className="text-gray-400 line-through text-sm">¥{pkg.originalPrice}</span>
                     )}
-                    <span className="text-2xl font-bold text-purple-600">¥{pkg.price}</span>
+                    <span className="text-2xl font-bold text-purple-600">${pkg.priceUSD}</span>
+                    <span className="text-gray-400 text-sm ml-1">(~¥{pkg.price})</span>
                   </div>
                   <ul className="space-y-1 text-sm text-gray-600 mb-4">
                     <li>📦 {pkg.credits} 积分</li>

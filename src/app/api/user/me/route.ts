@@ -23,6 +23,29 @@ export async function GET() {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 })
   }
 
+  // 获取今日使用次数（从积分记录中统计 GENERATE 类型）
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayUsage = await prisma.creditLog.count({
+    where: {
+      userId: user.id,
+      type: 'GENERATE',
+      createdAt: { gte: todayStart }
+    }
+  })
+
+  // 获取本月使用次数
+  const monthStart = new Date()
+  monthStart.setDate(1)
+  monthStart.setHours(0, 0, 0, 0)
+  const monthUsage = await prisma.creditLog.count({
+    where: {
+      userId: user.id,
+      type: 'GENERATE',
+      createdAt: { gte: monthStart }
+    }
+  })
+
   return NextResponse.json({
     id: user.id,
     email: user.email,
@@ -38,8 +61,8 @@ export async function GET() {
     lastLoginAt: user.lastLoginAt,
     isVIP: isVIP(user.vipExpireAt),
     stats: {
-      todayUsage: 0,
-      monthUsage: 0,
+      todayUsage,
+      monthUsage,
       totalGenerations: user.totalUsage,
     }
   })

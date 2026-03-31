@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -439,6 +440,11 @@ export default function Home() {
         </div>
 
         <footer className="mt-10 text-center text-white">
+          <nav className="mb-4 flex justify-center gap-6 text-sm">
+            <Link href="/gallery" className="hover:underline">🎨 风格展示</Link>
+            <Link href="/blog" className="hover:underline">📚 博客教程</Link>
+            <a href="/sitemap.xml" className="hover:underline">Sitemap</a>
+          </nav>
           <p className="mb-2 font-bold text-lg drop-shadow-md">© 2024 ImgArt</p>
           <p className="text-sm text-white/80 drop-shadow-sm">🎨 图片不存储，仅用于生成过程 🎨</p>
         </footer>

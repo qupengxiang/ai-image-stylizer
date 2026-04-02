@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import '../styles/globals.css';
 import Providers from './providers';
 
@@ -89,6 +90,9 @@ export const metadata: Metadata = {
   verification: {
     google: 'google-site-verification-file',
   },
+  other: {
+    'gtag': 'G-YPV5461W5Z',
+  },
   category: 'AI Image Generation',
   classification: 'Online Tool',
 };
@@ -165,6 +169,15 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-YPV5461W5Z" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YPV5461W5Z');
+          `}
+        </Script>
       </body>
     </html>
   );

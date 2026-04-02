@@ -248,10 +248,10 @@ export default function Home() {
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {session && (
               <a
-                href="/user-center"
+                href="/account"
                 className="bg-white/20 hover:bg-white/30 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors"
               >
-                👤 用户中心
+                👤 账户中心
               </a>
             )}
             {status === "loading" ? (
@@ -532,7 +532,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     setShowVipModal(false);
-                    window.location.href = '/user-center/membership';
+                    window.location.href = '/account/vip';
                   }}
                   className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-bold transition-all"
                 >

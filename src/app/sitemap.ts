@@ -2,50 +2,41 @@ import { MetadataRoute } from 'next';
 
 const BASE_URL = 'https://imgart.shop';
 
-const styles = [
-  'cute-cartoon',
-  'anime-manga',
-  'pixel-art',
-  'chibi',
-  'comic-book',
-  'disney',
-  'studio-ghibli',
-  'pop-art',
-  'cartoon-network',
-  'stop-motion',
-  'retro-cartoon',
-  'digital-painting',
-];
-
-const blogSlugs = [
-  'how-to-make-cartoon-avatar',
-  'ai-image-stylizer-tools-comparison',
-  'disney-style-photo-tutorial',
-  'anime-avatar-guide',
-  'pixel-art-photo-effect',
-];
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ['', '/gallery', '/blog'].map((route) => ({
-    url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1.0 : 0.8,
-  }));
-
-  const styleRoutes = styles.map((style) => ({
-    url: `${BASE_URL}/gallery/${style}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
-
-  const blogRoutes = blogSlugs.map((slug) => ({
-    url: `${BASE_URL}/blog/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
-
-  return [...routes, ...styleRoutes, ...blogRoutes];
+  return [
+    {
+      url: BASE_URL,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
+      url: `${BASE_URL}/gallery`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      annotations: {
+        'twitter:title': 'ImgArt 风格展示 - 查看50+种艺术风格效果',
+        'twitter:description': '浏览ImgArt生成的各种风格图片效果，包括吉卜力、皮克斯、迪士尼、动漫等',
+      },
+    },
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/account`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/account/vip`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+  ];
 }

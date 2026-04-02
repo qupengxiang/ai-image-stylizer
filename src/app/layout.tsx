@@ -13,25 +13,40 @@ export const metadata: Metadata = {
     default: 'ImgArt - AI图片转卡通风格 | 50+艺术风格免费在线生成',
     template: '%s | ImgArt - AI图片风格生成器',
   },
-  description: '免费在线AI工具，将你的照片一键转换成卡通、动漫、像素、迪士尼、吉卜力等50+种艺术风格。无需注册，直接使用，图片仅用于生成过程不存储。',
+  description: '免费在线AI工具，将你的照片一键转换成吉卜力、皮克斯、像素、迪士尼、动漫等50+种艺术风格。无需注册，直接使用，图片仅用于生成过程不存储。',
   keywords: [
+    // 核心关键词
     'AI图片转卡通',
     '照片变动漫',
     '图片风格转换',
     'AI头像生成',
     '卡通头像制作',
-    '像素化图片',
-    '迪士尼风格照片',
+    // 风格关键词
     '吉卜力风格',
+    '皮克斯3D风格',
+    '迪士尼风格',
+    '像素风格',
     '动漫头像',
+    'Q版头像',
+    '手办照片',
+    '乐高风格',
+    '老照片风格',
+    // 通用关键词
     '在线图片处理',
     '免费AI工具',
     '照片艺术化',
     'AI Art Generator',
     'cartoon maker',
     'anime filter',
+    'photo to cartoon',
+    'AI portrait',
+    // 长尾关键词
+    '如何把照片变成卡通',
+    '免费在线照片风格转换',
+    'AI生成艺术图片',
+    '一键生成卡通头像',
   ],
-  authors: [{ name: 'ImgArt' }],
+  authors: [{ name: 'ImgArt', url: BASE_URL }],
   creator: 'ImgArt',
   publisher: 'ImgArt',
   robots: {
@@ -52,7 +67,7 @@ export const metadata: Metadata = {
     url: BASE_URL,
     siteName: 'ImgArt',
     title: 'ImgArt - AI图片转卡通风格 | 50+艺术风格免费在线生成',
-    description: '免费在线AI工具，将你的照片一键转换成卡通、动漫、像素、迪士尼等50+种艺术风格。无需注册，直接使用。',
+    description: '免费在线AI工具，将你的照片一键转换成吉卜力、皮克斯、像素、迪士尼等50+种艺术风格',
     images: [
       {
         url: '/og-image.png',
@@ -70,14 +85,12 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: BASE_URL,
-    languages: {
-      'zh-CN': `${BASE_URL}/`,
-      'en-US': `${BASE_URL}/en`,
-    },
   },
   verification: {
-    google: 'your-google-verification-code', // 需要替换
+    google: 'google-site-verification-file',
   },
+  category: 'AI Image Generation',
+  classification: 'Online Tool',
 };
 
 export default function RootLayout({
@@ -113,12 +126,41 @@ export default function RootLayout({
     },
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: '首页',
+        item: BASE_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: '风格展示',
+        item: `${BASE_URL}/gallery`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: '用户中心',
+        item: `${BASE_URL}/account`,
+      },
+    ],
+  };
+
   return (
     <html lang="zh-CN">
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
       </head>
       <body className={inter.className}>

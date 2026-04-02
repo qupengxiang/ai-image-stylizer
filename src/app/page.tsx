@@ -1,87 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { styles, aspectRatios, styleCategories, generateImageFilename, type Style } from '@/lib/styles';
 
-const styles = [
-  { 
-    id: 'cute-cartoon', 
-    name: '可爱卡通',
-    example: 'https://picsum.photos/id/237/512/512',
-    prompt: '可爱卡通风格，Q版，大眼睛，色彩鲜艳，圆润线条，萌系'
-  },
-  { 
-    id: 'anime-manga', 
-    name: '动漫漫画',
-    example: 'https://picsum.photos/id/24/512/512',
-    prompt: '动漫漫画风格，日本风格，大眼睛，清晰线条，色彩鲜明，二次元'
-  },
-  { 
-    id: 'pixel-art', 
-    name: '像素艺术',
-    example: 'https://picsum.photos/id/20/512/512',
-    prompt: '像素艺术风格，8位或16位游戏风格，块状像素，复古感，鲜艳色彩'
-  },
-  { 
-    id: 'chibi', 
-    name: 'Q版人物',
-    example: 'https://picsum.photos/id/64/512/512',
-    prompt: 'Q版人物风格，头大身体小，可爱，圆润，色彩鲜艳，萌系'
-  },
-  { 
-    id: 'comic-book', 
-    name: '漫画书',
-    example: 'https://picsum.photos/id/91/512/512',
-    prompt: '漫画书风格，美国漫画，大胆线条，鲜明色彩，夸张表情，对话框'
-  },
-  { 
-    id: 'disney', 
-    name: '迪士尼',
-    example: 'https://picsum.photos/id/102/512/512',
-    prompt: '迪士尼风格，经典动画，圆润造型，明亮色彩，童话感，温馨'
-  },
-  { 
-    id: 'studio-ghibli', 
-    name: '吉卜力',
-    example: 'https://picsum.photos/id/106/512/512',
-    prompt: '吉卜力工作室风格，手绘感，细腻色彩，自然场景，奇幻元素'
-  },
-  { 
-    id: 'pop-art', 
-    name: '波普艺术',
-    example: 'https://picsum.photos/id/133/512/512',
-    prompt: '波普艺术风格，鲜艳色彩，重复图案，流行文化元素，对比强烈'
-  },
-  { 
-    id: 'cartoon-network', 
-    name: '卡通网络',
-    example: 'https://picsum.photos/id/169/512/512',
-    prompt: '卡通网络风格，夸张造型，鲜明色彩，幽默元素，现代卡通'
-  },
-  { 
-    id: 'stop-motion', 
-    name: '定格动画',
-    example: 'https://picsum.photos/id/177/512/512',
-    prompt: '定格动画风格，黏土感，手工制作感，温暖色调，立体效果'
-  },
-  { 
-    id: 'retro-cartoon', 
-    name: '复古卡通',
-    example: 'https://picsum.photos/id/180/512/512',
-    prompt: '复古卡通风格，1950年代风格，简洁线条，柔和色彩，经典动画感'
-  },
-  { 
-    id: 'digital-painting', 
-    name: '数字绘画',
-    example: 'https://picsum.photos/id/188/512/512',
-    prompt: '数字绘画风格，CG感，细腻纹理，丰富色彩，现代艺术感'
-  },
-];
-
-// 卡通风格的颜色和样式
+// 卡通风格的颜色
 const cartoonColors = {
   primary: '#FF6B6B',
   secondary: '#4ECDC4',
@@ -93,37 +18,50 @@ const cartoonColors = {
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string>('ghibli');
+  const [selectedAspect, setSelectedAspect] = useState<string>('1:1');
+  const [customPrompt, setCustomPrompt] = useState<string>('');
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showVipModal, setShowVipModal] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('hot');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 登录后强制刷新 session
   useEffect(() => {
     setMounted(true);
-    // 登录回调后会带有特定参数，检测到则刷新
     const params = new URLSearchParams(window.location.search);
     if (params.has('callback') || params.has('authenticated')) {
       window.location.reload();
     }
   }, []);
 
-  // 当 session 状态变化时强制刷新
   useEffect(() => {
     if (status === "authenticated") {
       router.refresh();
     }
   }, [status, router]);
-  const [selectedStyle, setSelectedStyle] = useState<string>('cute-cartoon');
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showVipModal, setShowVipModal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 获取当前选中风格的提示词
-  const getCurrentStylePrompt = () => {
-    const style = styles.find(s => s.id === selectedStyle);
-    return style?.prompt || '可爱卡通风格，Q版，大眼睛，色彩鲜艳，圆润线条，萌系';
+  // 获取当前选中风格
+  const getCurrentStyle = (): Style | undefined => {
+    return styles.find(s => s.id === selectedStyle);
+  };
+
+  // 获取当前提示词（支持自定义）
+  const getCurrentPrompt = () => {
+    if (selectedStyle === 'custom-style' && customPrompt.trim()) {
+      return customPrompt.trim();
+    }
+    return getCurrentStyle()?.prompt || '';
+  };
+
+  // 获取当前尺寸
+  const getCurrentAspectRatio = () => {
+    const aspect = aspectRatios.find(a => a.id === selectedAspect);
+    return aspect?.ratio || '1/1';
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +74,9 @@ export default function Home() {
 
   const handleStyleChange = (styleId: string) => {
     setSelectedStyle(styleId);
+    if (styleId !== 'custom-style') {
+      setCustomPrompt(''); // 切换到非自定义时清空
+    }
     if (generatedImage) {
       setGeneratedImage(null);
     }
@@ -147,9 +88,14 @@ export default function Home() {
       return;
     }
 
-    // 检查登录状态
     if (status !== 'authenticated') {
       setShowLoginModal(true);
+      return;
+    }
+
+    const prompt = getCurrentPrompt();
+    if (!prompt && selectedStyle === 'custom-style') {
+      setError('请输入自定义提示词');
       return;
     }
 
@@ -157,9 +103,9 @@ export default function Home() {
     setError(null);
 
     try {
-      // 先调用 API 扣积分
-      const deductRes = await fetch('/api/generation', { method: 'POST' })
-      const deductData = await deductRes.json()
+      // 扣积分
+      const deductRes = await fetch('/api/generation', { method: 'POST' });
+      const deductData = await deductRes.json();
       
       if (!deductRes.ok) {
         if (deductData.code === 'INSUFFICIENT_CREDITS') {
@@ -172,61 +118,59 @@ export default function Home() {
         return;
       }
       
-      console.log('积分已扣除:', deductData.cost, '剩余:', deductData.remainingCredits)
+      // 根据尺寸计算图片分辨率
+      const aspectRatio = getCurrentAspectRatio();
+      const [w, h] = aspectRatio.split('/').map(Number);
+      const baseSize = 512;
+      const width = w > h ? baseSize : Math.round(baseSize * w / h);
+      const height = h > w ? baseSize : Math.round(baseSize * h / w);
       
-      // 获取当前选中风格的提示词
-      const stylePrompt = getCurrentStylePrompt();
-      
-      // 模拟风格迁移过程
+      // 模拟风格迁移
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // 直接使用picsum.photos作为生成结果，确保图片能够正确加载
-      // 为了确保每次生成的图片不同，使用随机种子
-      const randomSeed = Math.floor(Math.random() * 1000);
-      const generatedUrl = `https://picsum.photos/seed/${randomSeed}/512/512`;
+      // 生成图片URL
+      const style = getCurrentStyle();
+      const seed = `${style?.id || 'custom'}-${Date.now()}`;
+      const generatedUrl = `https://picsum.photos/seed/${seed}/${width}/${height}`;
       
-      console.log('生成的图片URL:', generatedUrl);
-      
-      // 设置生成的图片URL
       setGeneratedImage(generatedUrl);
     } catch (err) {
       setError('生成图片时出错，请重试');
       console.error('生成图片错误:', err);
-      
-      // 出错时使用备用方案
-      const randomSeed = Math.floor(Math.random() * 1000);
-      const fallbackUrl = `https://picsum.photos/seed/${randomSeed}/512/512`;
-      console.log('使用备用图片:', fallbackUrl);
-      setGeneratedImage(fallbackUrl);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // SEO友好的下载文件名
   const handleDownload = async () => {
     if (!generatedImage) return;
     
     try {
+      const style = getCurrentStyle();
+      const filename = generateImageFilename(style?.name || 'custom', style?.id || 'custom');
+      
       const response = await fetch(generatedImage);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `imgart-${Date.now()}.png`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('下载失败:', err);
-      // Fallback: open in new tab
       window.open(generatedImage, '_blank');
     }
   };
 
   const handleReset = () => {
     setSelectedFile(null);
-    setSelectedStyle('cute-cartoon');
+    setSelectedStyle('ghibli');
+    setSelectedAspect('1:1');
+    setCustomPrompt('');
     setGeneratedImage(null);
     setError(null);
     if (fileInputRef.current) {
@@ -234,9 +178,15 @@ export default function Home() {
     }
   };
 
+  // 分类过滤后的风格
+  const filteredStyles = activeCategory === 'all' 
+    ? styles 
+    : styles.filter(s => s.category === activeCategory);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-yellow-400 py-8 px-4 sm:px-6 lg:px-8 font-sans overflow-x-auto">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <header className="text-center mb-10">
           <div className="inline-block mb-6 p-4 bg-white rounded-full shadow-2xl border-4 border-yellow-300 transform rotate-3">
             <svg className="w-16 h-16 text-[#FF6B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,15 +194,15 @@ export default function Home() {
             </svg>
           </div>
 
-          {/* 右上角用户状态 */}
+          {/* 用户状态 */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {session && (
-              <a
+              <Link
                 href="/account"
                 className="bg-white/20 hover:bg-white/30 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors"
               >
                 👤 账户中心
-              </a>
+              </Link>
             )}
             {status === "loading" ? (
               <span className="text-white/70 text-sm">加载中...</span>
@@ -267,7 +217,7 @@ export default function Home() {
                 )}
                 <span className="text-white font-medium hidden sm:inline">{session.user?.name}</span>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signIn("google")}
                   className="bg-white/20 hover:bg-white/30 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors"
                 >
                   退出
@@ -283,85 +233,172 @@ export default function Home() {
             )}
           </div>
 
-          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-bounce drop-shadow-lg">🎨 ImgArt 🎨</h1>
+          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-bounce drop-shadow-lg">
+            🎨 ImgArt 🎨
+          </h1>
           <p className="text-white text-xl max-w-3xl mx-auto font-medium drop-shadow-md">
-            上传图片，选择风格，一键生成超酷的艺术作品！图片不存储，仅用于生成过程。
+            上传图片，选择风格，一键生成超酷的艺术作品！
           </p>
+          <p className="text-white/80 text-sm mt-2">支持 50+ 艺术风格 · 图片不存储 · 仅用于生成过程</p>
         </header>
 
+        {/* 3步流程 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          {/* 左边：风格选择 */}
-          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-pink-400 p-6 h-[650px] overflow-y-auto transform hover:-translate-y-1">
-            <h2 className="text-2xl font-bold mb-6 text-center text-[#FF6B6B] drop-shadow-sm">🎭 选择风格</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {styles.map(style => (
-                <div
-                  key={style.id}
-                  onClick={() => handleStyleChange(style.id)}
-                  className={`rounded-xl overflow-hidden transition-all duration-300 cursor-pointer transform hover:scale-110 ${selectedStyle === style.id
-                    ? 'ring-4 ring-[#FF6B6B] shadow-lg'
-                    : 'hover:shadow-md border-2 border-gray-200'
-                    }`}
+          {/* Step 1: 选择风格 */}
+          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-pink-400 p-5 h-[700px] overflow-hidden flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+              <h2 className="text-xl font-bold text-[#FF6B6B]">🎭 选择风格</h2>
+            </div>
+            
+            {/* 分类Tab */}
+            <div className="flex flex-wrap gap-1 mb-3">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                  activeCategory === 'all' ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-pink-100'
+                }`}
+              >
+                全部
+              </button>
+              {Object.entries(styleCategories).map(([key, val]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveCategory(key)}
+                  className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                    activeCategory === key ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-pink-100'
+                  }`}
                 >
-                  <div className="h-28 overflow-hidden bg-gray-100 border-b-2 border-gray-200">
-                    <img
-                      src={style.example}
-                      alt={style.name}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-125"
-                    />
-                  </div>
-                  <div className={`p-3 text-center ${selectedStyle === style.id
-                    ? 'bg-[#FF6B6B] text-white'
-                    : 'bg-white text-[#292F36] hover:bg-pink-50'
-                    }`}>
-                    <p className="font-bold text-sm">{style.name}</p>
-                  </div>
-                </div>
+                  {val.name}
+                </button>
               ))}
+            </div>
+            
+            {/* 风格列表 */}
+            <div className="flex-grow overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2">
+                {filteredStyles.map(style => (
+                  <div
+                    key={style.id}
+                    onClick={() => handleStyleChange(style.id)}
+                    className={`rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
+                      selectedStyle === style.id
+                        ? 'ring-2 ring-[#FF6B6B] shadow-lg scale-105'
+                        : 'hover:shadow-md border-2 border-gray-200'
+                    }`}
+                  >
+                    <div className="h-20 overflow-hidden bg-gray-100">
+                      <img
+                        src={style.example}
+                        alt={style.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                      />
+                    </div>
+                    <div className={`p-2 text-center ${selectedStyle === style.id ? 'bg-[#FF6B6B] text-white' : 'bg-white text-gray-700'}`}>
+                      <p className="font-bold text-xs truncate">{style.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* 中间：上传图片 */}
-          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-blue-400 p-5 h-[650px] flex flex-col transform hover:-translate-y-1">
-            <h2 className="text-xl font-bold mb-4 text-center text-[#4ECDC4] drop-shadow-sm">📸 上传图片</h2>
-            <div className="flex flex-col items-center flex-grow mb-4">
+          {/* Step 2: 上传图片 */}
+          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-blue-400 p-5 h-[700px] flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+              <h2 className="text-xl font-bold text-[#4ECDC4]">📸 上传图片</h2>
+            </div>
+            
+            {/* 尺寸选择 */}
+            <div className="mb-4">
+              <p className="text-sm font-medium text-gray-600 mb-2">选择图片尺寸：</p>
+              <div className="flex gap-2">
+                {aspectRatios.map(ratio => (
+                  <button
+                    key={ratio.id}
+                    onClick={() => setSelectedAspect(ratio.id)}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1 ${
+                      selectedAspect === ratio.id
+                        ? 'bg-blue-500 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-600 hover:bg-blue-100'
+                    }`}
+                  >
+                    <span>{ratio.icon}</span>
+                    <span>{ratio.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* 文件上传 */}
+            <div className="flex-grow flex flex-col items-center mb-4">
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="input-file mb-4 w-full"
+                className="hidden"
               />
+              
               {selectedFile ? (
-                <div className="mt-2 w-full flex-grow">
+                <div className="w-full flex-grow flex flex-col">
                   <p className="text-sm text-[#4ECDC4] mb-2 text-center font-bold">预览：</p>
-                  <div className="relative w-full h-[320px] bg-gray-100 rounded-xl overflow-hidden border-3 border-dashed border-[#4ECDC4]">
+                  <div className="relative flex-grow bg-gray-100 rounded-xl overflow-hidden border-3 border-dashed border-[#4ECDC4] flex items-center justify-center">
                     <img
                       src={URL.createObjectURL(selectedFile)}
                       alt="预览"
-                      className="w-full h-full object-contain p-4"
+                      className="max-w-full max-h-full object-contain p-4"
                     />
                   </div>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
                 </div>
               ) : (
-                <div className="w-full flex-grow bg-gray-100 rounded-xl flex flex-col items-center justify-center border-3 border-dashed border-[#4ECDC4]">
+                <div 
+                  className="w-full flex-grow bg-gray-100 rounded-xl flex flex-col items-center justify-center border-3 border-dashed border-[#4ECDC4] cursor-pointer hover:bg-blue-50 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <svg className="w-14 h-14 text-[#4ECDC4] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-sm text-[#292F36] font-bold">点击上方按钮上传图片</p>
+                  <p className="text-sm text-[#292F36] font-bold">点击上传图片</p>
+                  <p className="text-xs text-gray-500 mt-1">支持 JPG、PNG 格式</p>
                 </div>
               )}
             </div>
+            
+            {/* 自定义提示词 */}
+            {selectedStyle === 'custom-style' && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-600 mb-2">自定义提示词：</p>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="输入你想要风格描述..."
+                  maxLength={500}
+                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-lg text-sm resize-none focus:border-pink-400 focus:outline-none"
+                />
+                <p className="text-xs text-gray-400 mt-1 text-right">{customPrompt.length}/500</p>
+              </div>
+            )}
             
             {/* 操作按钮 */}
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleGenerate}
                 disabled={!selectedFile || isLoading}
-                className="btn bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white flex items-center justify-center gap-2 py-2 text-base font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 w-full transform hover:scale-105"
+                className="btn bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white flex items-center justify-center gap-2 py-3 text-base font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 w-full transform hover:scale-105"
               >
-                {isLoading && <div className="loading-spinner h-4 w-4"></div>}
-                {isLoading ? '✨ 生成中...' : '🚀 生成图片'}
+                {isLoading ? (
+                  <>
+                    <div className="loading-spinner h-4 w-4"></div>
+                    <span>✨ 生成中...</span>
+                  </>
+                ) : (
+                  <span>🚀 生成图片</span>
+                )}
               </button>
               <button
                 onClick={handleReset}
@@ -373,43 +410,48 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 右边：展示区域和提示词 */}
-          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-yellow-400 p-6 h-[650px] flex flex-col transform hover:-translate-y-1">
-            <h2 className="text-2xl font-bold mb-6 text-center text-[#FFD166] drop-shadow-sm">🎊 生成结果</h2>
+          {/* Step 3: 生成结果 */}
+          <div className="bg-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 border-4 border-yellow-400 p-5 h-[700px] flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+              <h2 className="text-xl font-bold text-[#FFD166]">🎊 生成结果</h2>
+            </div>
             
             {/* 提示词显示 */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl border-2 border-pink-300">
-              <h3 className="text-sm font-bold text-[#FF6B6B] mb-2">🎯 当前风格提示词：</h3>
-              <p className="text-xs text-[#292F36] bg-white p-3 rounded-lg border border-gray-200">{getCurrentStylePrompt()}</p>
+            <div className="mb-4 p-3 bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl border-2 border-pink-200">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-bold text-[#FF6B6B]">🎯 当前风格提示词：</h3>
+                {selectedStyle === 'custom-style' && (
+                  <span className="text-xs bg-pink-500 text-white px-2 py-0.5 rounded">自定义</span>
+                )}
+              </div>
+              <p className="text-xs text-[#292F36] bg-white p-2 rounded-lg border border-gray-200 line-clamp-3">
+                {getCurrentPrompt() || '请选择风格或输入自定义提示词'}
+              </p>
             </div>
             
             {/* 生成结果 */}
             {generatedImage ? (
               <div className="flex-grow flex flex-col">
-                <div className="relative w-full h-[350px] bg-gray-100 rounded-xl overflow-hidden border-4 border-[#4ECDC4] mb-6">
-                  {/* 显示生成的图片 */}
+                <div className="relative flex-grow bg-gray-100 rounded-xl overflow-hidden border-4 border-[#4ECDC4] mb-4 flex items-center justify-center">
                   <img
                     src={generatedImage}
                     alt="生成结果"
-                    className="w-full h-full object-contain p-6"
-                    onError={(e) => {
-                      // 图片加载失败时的处理
-                      console.error('图片加载失败:', e);
-                      // 使用备用图片
-                      const fallbackUrl = `https://picsum.photos/seed/${Math.random()}/512/512`;
-                      (e.target as HTMLImageElement).src = fallbackUrl;
-                    }}
+                    className="max-w-full max-h-full object-contain p-4"
                   />
                 </div>
-                <div className="flex justify-center">
+                <div className="flex gap-2">
                   <button
                     onClick={handleDownload}
-                    className="btn bg-gradient-to-r from-[#FFD166] to-[#FFBB33] text-[#292F36] flex items-center gap-2 px-6 py-2 text-base font-bold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    className="flex-1 btn bg-gradient-to-r from-[#FFD166] to-[#FFBB33] text-[#292F36] flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    💾 下载图片
+                    💾 下载
+                  </button>
+                  <button
+                    onClick={() => router.push('/gallery')}
+                    className="flex-1 btn bg-gradient-to-r from-[#4ECDC4] to-[#45B7D1] text-white flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  >
+                    🖼️ 我的图片
                   </button>
                 </div>
               </div>
@@ -419,7 +461,7 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                 </svg>
-                <p className="text-sm text-gray-500 text-center font-medium">
+                <p className="text-sm text-gray-500 text-center font-medium px-4">
                   上传图片并选择风格后，点击生成按钮查看结果
                 </p>
               </div>
@@ -427,9 +469,9 @@ export default function Home() {
             
             {/* 错误提示 */}
             {error && (
-              <div className="mt-6 bg-red-50 text-red-600 p-4 rounded-xl border-2 border-red-300">
+              <div className="mt-4 bg-red-50 text-red-600 p-3 rounded-xl border-2 border-red-300">
                 <div className="flex items-center gap-2">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                   <p className="font-bold text-sm">{error}</p>
@@ -439,6 +481,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Footer */}
         <footer className="mt-10 text-center text-white">
           <nav className="mb-4 flex justify-center gap-6 text-sm">
             <Link href="/gallery" className="hover:underline">🎨 风格展示</Link>
@@ -532,7 +575,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     setShowVipModal(false);
-                    window.location.href = '/account/vip';
+                    router.push('/account/vip');
                   }}
                   className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 rounded-xl font-bold transition-all"
                 >

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   // 扣减积分并记录
   const newBalance = user.credits - cost
 
-  const [updatedUser, generation] = await prisma.$transaction([
+  await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
       data: {
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
     })
   ])
 
-  // 这里返回成功，实际生成逻辑在客户端处理
   return NextResponse.json({
     success: true,
     cost,

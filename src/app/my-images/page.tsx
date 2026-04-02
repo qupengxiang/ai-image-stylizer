@@ -67,23 +67,25 @@ export default function MyImagesPage() {
     }
   }
 
-  const handleDownload = async (url: string, styleName: string) => {
-    try {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const filename = `imgart-${styleName}-${Date.now()}.jpg`
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(link.href)
-    } catch (error) {
-      console.error('下载失败:', error)
-      // Fallback: open in new tab
-      window.open(url, '_blank')
-    }
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownload = (url: string, styleName: string, id: string) => {
+    if (downloadingId) return;
+    
+    setDownloadingId(id);
+    const filename = `imgart-${styleName}-${Date.now()}.jpg`;
+    
+    // 直接通过 a 标签触发下载
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => setDownloadingId(null), 1000);
   }
 
   const handleDelete = async (id: string) => {
@@ -237,10 +239,15 @@ export default function MyImagesPage() {
                     {gen.resultUrl && !isExpired && (
                       <div className="flex gap-2 mt-3">
                         <button
-                          onClick={() => handleDownload(gen.resultUrl!, getStyleName(gen.style))}
-                          className="flex-1 bg-pink-500 hover:bg-pink-600 text-white text-xs py-2 rounded-lg font-medium transition-colors"
+                          onClick={() => handleDownload(gen.resultUrl!, getStyleName(gen.style), gen.id)}
+                          disabled={downloadingId === gen.id}
+                          className={`flex-1 text-white text-xs py-2 rounded-lg font-medium transition-colors ${
+                            downloadingId === gen.id 
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : 'bg-pink-500 hover:bg-pink-600'
+                          }`}
                         >
-                          💾 下载
+                          {downloadingId === gen.id ? '⏳ 下载中' : '💾 下载'}
                         </button>
                         <button
                           onClick={() => handleDelete(gen.id)}

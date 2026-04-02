@@ -170,28 +170,36 @@ export default function Home() {
     }
   };
 
-  // 下载图片
-  const handleDownload = async () => {
-    if (!generatedImage) return;
-    
-    try {
-      const style = getCurrentStyle();
-      const filename = generateImageFilename(style?.name || 'custom', style?.id || 'custom');
-      
-      const response = await fetch(generatedImage);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('下载失败:', err);
-      window.open(generatedImage, '_blank');
-    }
+  // 下载图片状态
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  const handleDownload = () => {
+    if (!generatedImage || isDownloading) return;
+
+    const style = getCurrentStyle();
+    const filename = generateImageFilename(style?.name || 'custom', style?.id || 'custom');
+
+    // 禁用按钮防止重复点击
+    setIsDownloading(true);
+    setDownloadSuccess(false);
+
+    // 方法1: 直接通过 a 标签 + target=_blank 触发下载
+    const link = document.createElement('a');
+    link.href = generatedImage;
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 延迟反馈
+    setTimeout(() => {
+      setIsDownloading(false);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3000);
+    }, 800);
   };
 
   // 重置
@@ -479,14 +487,37 @@ export default function Home() {
                     <div className="flex md:flex-col gap-3">
                       <button
                         onClick={handleDownload}
-                        className="flex-1 md:flex-none bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                        disabled={isDownloading}
+                        className={`flex-1 md:flex-none text-white px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+                          downloadSuccess 
+                            ? 'bg-green-500 hover:bg-green-600' 
+                            : isDownloading 
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : 'bg-pink-500 hover:bg-pink-600'
+                        }`}
                       >
-                        💾 下载图片
+                        {isDownloading ? (
+                          <>
+                            <span className="animate-spin">⏳</span>
+                            <span>下载中...</span>
+                          </>
+                        ) : downloadSuccess ? (
+                          <>
+                            <span>✓</span>
+                            <span>已下载</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>💾</span>
+                            <span>下载图片</span>
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={() => {
                           setGeneratedImage(null);
                           setShowSuccess(false);
+                          setDownloadSuccess(false);
                         }}
                         className="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium transition-colors"
                       >

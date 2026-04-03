@@ -184,22 +184,21 @@ export default function Home() {
     setIsDownloading(true);
     setDownloadSuccess(false);
 
-    // 方法1: 直接通过 a 标签 + target=_blank 触发下载
+    // 通过 API 代理下载，确保浏览器原生下载且文件名正确
+    const downloadUrl = `/api/download?url=${encodeURIComponent(generatedImage)}&filename=${encodeURIComponent(filename)}`;
+    
     const link = document.createElement('a');
-    link.href = generatedImage;
+    link.href = downloadUrl;
     link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // 延迟反馈
     setTimeout(() => {
       setIsDownloading(false);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
-    }, 800);
+    }, 500);
   };
 
   // 重置
@@ -586,8 +585,19 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-8 text-center text-gray-500 text-sm">
-          <p>© 2024 ArtFlow - 智能艺术图像生成</p>
+        <footer className="mt-8 text-center text-gray-500 text-sm space-y-2">
+          <div className="flex justify-center gap-4 text-xs">
+            <Link href="/pricing" className="hover:text-purple-600 transition-colors">💎 定价</Link>
+            <span>•</span>
+            <Link href="/about" className="hover:text-purple-600 transition-colors">ℹ️ 关于</Link>
+            <span>•</span>
+            <Link href="/help" className="hover:text-purple-600 transition-colors">❓ 帮助</Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-purple-600 transition-colors">📄 条款</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-purple-600 transition-colors">🔒 隐私</Link>
+          </div>
+          <p>© 2024 ImgArt - AI图片转卡通风格</p>
         </footer>
       </main>
 

@@ -75,16 +75,16 @@ export default function MyImagesPage() {
     setDownloadingId(id);
     const filename = `imgart-${styleName}-${Date.now()}.jpg`;
     
-    // 直接通过 a 标签触发下载
+    // 通过 API 代理下载，确保浏览器原生下载且文件名正确
+    const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+    
     const link = document.createElement('a');
-    link.href = url;
+    link.href = downloadUrl;
     link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
+    
     setTimeout(() => setDownloadingId(null), 1000);
   }
 
